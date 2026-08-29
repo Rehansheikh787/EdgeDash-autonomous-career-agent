@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# EdgeDash-autonomous-career-agent-
-=======
 # ⚡ EdgeDash — Autonomous Career Intelligence Agent
 
 An autonomous multi-agent career intelligence platform that continuously tracks the job market, extracts skill requirements using LLMs, computes deterministic fit scores, identifies high-ROI skill gaps, and serves verified insights on a Streamlit dashboard with natural language query capabilities.
