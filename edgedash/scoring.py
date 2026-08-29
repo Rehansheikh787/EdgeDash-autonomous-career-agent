@@ -93,7 +93,18 @@ def score_listing(
         if loc
     )
 
-    if is_remote_listing or is_location_match:
+    # Foreign country restriction check (e.g. "Remote in Deutschland", "UK - Remote")
+    foreign_restrictions = [
+        "deutschland", "germany", "uk", "united kingdom", "us only", "usa only",
+        "austria", "switzerland", "france", "spain", "netherlands", "berlin", "munich",
+        "london", "emea", "latam"
+    ]
+    active_restrictions = [r for r in foreign_restrictions if not any(r in tl for tl in target_locs)]
+    is_foreign_country_restricted = any(r in listing_loc for r in active_restrictions)
+
+    if is_foreign_country_restricted and not is_location_match:
+        location_fit = 0.1  # Clearly elsewhere and not matching
+    elif is_location_match or is_remote_listing:
         location_fit = 1.0
     elif remote_ok is None and (not listing_loc or listing_loc in {"unknown", "n/a", "none"}):
         location_fit = 0.5
