@@ -26,10 +26,10 @@ class Plan:
         """Render compact printable plan before execution (Rule 31)."""
         lines = [
             "  Plan",
-            "  " + "─" * 66,
+            "  " + "-" * 66,
         ]
         for t in self.tasks:
-            icon = "▸" if t.action == "run" else "·"
+            icon = ">" if t.action == "run" else "-"
             action_tag = "RUN " if t.action == "run" else "SKIP"
             limits_str = ", ".join(f"{k}={v}" for k, v in t.stop_conditions.items())
             lines.append(f"  {icon} {t.agent_name:<12} [{action_tag}] {t.reason}")
@@ -94,6 +94,9 @@ def build_plan(state: SystemState, config: Config) -> Plan:
     elif state.gaps_stale:
         gap_run = True
         gap_reason = "gaps_stale=True"
+    elif state.last_cycle_verdict not in ("complete", "verified"):
+        gap_run = True
+        gap_reason = f"last_cycle_verdict={state.last_cycle_verdict} (re-analyze)"
     else:
         gap_run = False
         gap_reason = "skipped: gaps_stale=False"

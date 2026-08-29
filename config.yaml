@@ -30,7 +30,7 @@ min_fit_score: 60
 
 sources:
   - arbeitnow
-  # - apify  # Needs APIFY_TOKEN in .env
+  - apify
 
 use_mock_fetcher: false
 

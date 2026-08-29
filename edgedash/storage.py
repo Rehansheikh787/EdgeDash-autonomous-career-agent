@@ -279,7 +279,11 @@ class _UnifiedConnection:
                 import psycopg
                 from psycopg.rows import dict_row
 
-                self._raw_conn = psycopg.connect(self.db_url, row_factory=dict_row)
+                self._raw_conn = psycopg.connect(
+                    self.db_url,
+                    row_factory=dict_row,
+                    prepare_threshold=None,
+                )
             except ImportError:
                 try:
                     import psycopg2

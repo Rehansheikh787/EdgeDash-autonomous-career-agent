@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 from edgedash.agents.verifier import Verifier
@@ -30,7 +31,8 @@ class TestVerifierAgent(unittest.TestCase):
         mock_scored.return_value = [{"fit_score": s} for s in [25, 45, 65, 80, 90]]
         mock_facts.return_value = [{"required_skills": ["python", "sql"]}] * 5
         mock_gaps.return_value = {"gaps": [{"skill": "k8s", "listings_blocked": 5}]}
-        mock_fetch.return_value = "2026-08-24T12:00:00+00:00"
+        now_str = datetime.now(timezone.utc).isoformat()
+        mock_fetch.return_value = now_str
 
         res = self.verifier.run(self.config, ":memory:")
         self.assertEqual(res.status, "ok")
@@ -47,7 +49,7 @@ class TestVerifierAgent(unittest.TestCase):
         mock_scored.return_value = [{"fit_score": 50}] * 5
         mock_facts.return_value = [{"required_skills": ["python"]}] * 5
         mock_gaps.return_value = {"gaps": [{"skill": "k8s", "listings_blocked": 5}]}
-        mock_fetch.return_value = "2026-08-24T12:00:00+00:00"
+        mock_fetch.return_value = datetime.now(timezone.utc).isoformat()
 
         res = self.verifier.run(self.config, ":memory:")
         self.assertEqual(res.status, "failed")

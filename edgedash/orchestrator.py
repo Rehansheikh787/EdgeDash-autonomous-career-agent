@@ -199,16 +199,16 @@ def run_cycle(config: Config) -> None:
 
 def _header() -> None:
     print()
-    print("═" * 48)
-    print("  EdgeDash — State-Driven Cycle Start")
-    print("═" * 48)
+    print("=" * 48)
+    print("  EdgeDash - State-Driven Cycle Start")
+    print("=" * 48)
     print()
 
 
 def _show_state(state: Any) -> None:
     hours_str = f"{state.hours_since_fetch:.1f}h ago" if state.hours_since_fetch is not None else "never"
     print("  State")
-    print("  " + "─" * 44)
+    print("  " + "-" * 44)
     print(f"  Last fetch     : {state.last_fetch_at or 'never'} ({hours_str})")
     print(f"  Unscored       : {state.unscored_count}")
     print(f"  Gaps computed  : {state.gaps_computed_at or 'never'} (stale={state.gaps_stale})")
@@ -221,7 +221,7 @@ def _show_summary(
     skipped_tasks: list[Task],
 ) -> None:
     print("  Summary")
-    print("  " + "─" * 44)
+    print("  " + "-" * 44)
     print(f"  {'Agent':<15} {'Status':<10} {'Records':<9} Time")
     for _, res, elapsed in results:
         print(f"  {res.agent:<15} {res.status:<10} {res.records_touched:<9} {elapsed:.2f}s")
@@ -231,7 +231,7 @@ def _show_summary(
 
 
 def _footer(ran_count: int, touched: int, outcome: str) -> None:
-    print("═" * 48)
-    print(f"  Cycle {outcome} — {ran_count} agent(s) ran, {touched} records touched")
-    print("═" * 48)
+    print("=" * 48)
+    print(f"  Cycle {outcome} - {ran_count} agent(s) ran, {touched} records touched")
+    print("=" * 48)
     print()

@@ -241,3 +241,27 @@ def ask(
         summary=summary,
         answerable=True,
     )
+
+
+def main() -> None:
+    import sys
+
+    if len(sys.argv) < 2:
+        print("Usage: python -m edgedash.query.ask \"Your natural language question here\"")
+        sys.exit(1)
+
+    question = " ".join(sys.argv[1:])
+    print(f"\nQuestion: \"{question}\"")
+    answer = ask(question)
+    print(f"\nAnswer: {answer.text}")
+    if answer.tool_used:
+        print(f"Tool used: {answer.tool_used} ({answer.summary})")
+    if answer.rows:
+        print(f"\nRows returned ({len(answer.rows)}):")
+        for idx, row in enumerate(answer.rows[:5], 1):
+            print(f"  {idx}. {row}")
+    print()
+
+
+if __name__ == "__main__":
+    main()

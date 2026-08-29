@@ -19,24 +19,28 @@ class ApifySource:
     def fetch(self, config: Config) -> list[dict[str, Any]]:
         token = os.environ.get("APIFY_TOKEN")
         if not token:
-            print("[apify] no APIFY_TOKEN, skipping")
+            print("[apify] no APIFY_TOKEN configured, skipping")
             return []
 
         url = "https://api.apify.com/v2/acts/apify~job-scrappers/run-sync-get-dataset-items"
         params = {
             "token": token,
             "query": config.target_role,
-            "location": config.target_city,
-            "limit": 100,
-            "maxItems": 100,
+            "location": config.target_city or getattr(config, "target_country", ""),
+            "limit": 50,
+            "maxItems": 50,
         }
 
-        data = get_json(url, params=params)
-        items = data if isinstance(data, list) else (data.get("items") or data.get("data") or [])
-        if not isinstance(items, list):
-            items = []
+        try:
+            data = get_json(url, params=params, timeout=25.0, max_retries=1)
+            items = data if isinstance(data, list) else (data.get("items") or data.get("data") or [])
+            if not isinstance(items, list):
+                items = []
+        except Exception as exc:
+            print(f"[apify] Scraper run skipped or timed out: {exc}")
+            return []
 
-        items = items[:100]
+        items = items[:50]
         print(f"[apify] Raw results: {len(items)}")
 
         return [_normalise_item(item) for item in items if isinstance(item, dict)]

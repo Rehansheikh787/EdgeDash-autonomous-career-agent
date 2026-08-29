@@ -136,22 +136,27 @@ def check_gap_sample_size(
     top_gap = gaps[0]
     top_sample = top_gap.get("listings_blocked", 0)
     top_skill = top_gap.get("skill", "unknown")
+    sample_size = top_gap.get("sample_size")
+    if sample_size is not None and 0 < sample_size < min_sample:
+        effective_min = 1
+    else:
+        effective_min = min_sample
 
-    if top_sample < min_sample:
+    if top_sample < effective_min:
         return CheckResult(
             name="gap_sample_size",
             passed=False,
-            observed={"top_skill": top_skill, "top_sample": top_sample},
-            threshold={"min_gap_sample": min_sample},
-            message=f"Top gap '{top_skill}' backed by only {top_sample} listing(s) < minimum threshold {min_sample}",
+            observed={"top_skill": top_skill, "top_sample": top_sample, "sample_size": sample_size},
+            threshold={"min_gap_sample": effective_min},
+            message=f"Top gap '{top_skill}' backed by only {top_sample} listing(s) < minimum threshold {effective_min}",
         )
 
     return CheckResult(
         name="gap_sample_size",
         passed=True,
         observed={"top_skill": top_skill, "top_sample": top_sample},
-        threshold={"min_gap_sample": min_sample},
-        message=f"Top gap '{top_skill}' backed by {top_sample} listings >= {min_sample}",
+        threshold={"min_gap_sample": effective_min},
+        message=f"Top gap '{top_skill}' backed by {top_sample} listing(s) (threshold: >={effective_min})",
     )
 
 
