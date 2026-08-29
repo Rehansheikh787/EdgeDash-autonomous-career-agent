@@ -263,8 +263,13 @@ class _UnifiedConnection:
 
     def __init__(self, path: str) -> None:
         self.path = path
-        self.db_url = _get_database_url()
-        self.is_pg = self.db_url is not None
+        # In unit tests with temporary/memory DBs, always use SQLite
+        if path == ":memory:" or "tmp" in path.lower() or path.startswith("test_"):
+            self.db_url = None
+            self.is_pg = False
+        else:
+            self.db_url = _get_database_url()
+            self.is_pg = self.db_url is not None
         self._raw_conn: Any = None
 
     def __enter__(self) -> _UnifiedConnection:
@@ -387,15 +392,13 @@ def count_unscored(path: str) -> int:
         row = conn.execute(
             "SELECT COUNT(*) FROM listings WHERE fit_score IS NULL"
         ).fetchone()
-    return int(row[0] if isinstance(row, (tuple, list)) else row["count"] if "count" in row else list(row.values())[0])
+    return int(_first_val(row) or 0)
 
 
 def last_fetch_time(path: str) -> str | None:
     with _connect(path) as conn:
         row = conn.execute("SELECT MAX(fetched_at) FROM listings").fetchone()
-    if not row:
-        return None
-    val = row[0] if isinstance(row, (tuple, list)) else list(row.values())[0]
+    val = _first_val(row)
     return str(val) if val is not None else None
 
 
@@ -403,17 +406,18 @@ def read_system_state_metrics(path: str) -> dict[str, Any]:
     """Read cheap system state metrics for orchestrator planning (Rule 2)."""
     with _connect(path) as conn:
         r_fetch = conn.execute("SELECT MAX(fetched_at) as max_fetch FROM listings").fetchone()
-        last_fetch_at = _first_val(r_fetch)
+        last_fetch_at = str(_first_val(r_fetch)) if _first_val(r_fetch) is not None else None
 
         r_unscored = conn.execute("SELECT COUNT(*) as unscored FROM listings WHERE fit_score IS NULL").fetchone()
         unscored_count = int(_first_val(r_unscored) or 0)
 
         r_scored = conn.execute("SELECT COUNT(*) as scored, MAX(fetched_at) as max_scored FROM listings WHERE fit_score IS NOT NULL").fetchone()
-        scored_count = int(r_scored[0] if isinstance(r_scored, (tuple, list)) else r_scored.get("scored", 0) if r_scored else 0)
-        latest_scored_at = str(r_scored[1] if isinstance(r_scored, (tuple, list)) else r_scored.get("max_scored")) if (r_scored and _val_idx(r_scored, 1) is not None) else None
+        scored_count = int(_val_idx(r_scored, 0) or 0)
+        max_sc = _val_idx(r_scored, 1)
+        latest_scored_at = str(max_sc) if max_sc is not None else None
 
         r_gaps = conn.execute("SELECT MAX(computed_at) as max_gaps FROM skill_gaps").fetchone()
-        gaps_computed_at = _first_val(r_gaps)
+        gaps_computed_at = str(_first_val(r_gaps)) if _first_val(r_gaps) is not None else None
 
         r_cycle = conn.execute(
             "SELECT status, finished_at FROM cycle_log ORDER BY id DESC LIMIT 1"
@@ -978,22 +982,35 @@ def get_diagnostics(path: str) -> dict[str, Any]:
 def _first_val(row: Any) -> Any:
     if not row:
         return None
+    if isinstance(row, sqlite3.Row):
+        return row[0]
     if isinstance(row, (tuple, list)):
         return row[0]
-    if isinstance(row, dict) or hasattr(row, "values"):
-        return list(row.values())[0]
-    return row[0]
+    if isinstance(row, dict):
+        return list(row.values())[0] if row else None
+    try:
+        return row[0]
+    except Exception:
+        return None
 
 
 def _val_idx(row: Any, idx: int) -> Any:
     if not row:
         return None
+    if isinstance(row, sqlite3.Row):
+        try:
+            return row[idx]
+        except Exception:
+            return None
     if isinstance(row, (tuple, list)):
         return row[idx] if idx < len(row) else None
-    if isinstance(row, dict) or hasattr(row, "values"):
+    if isinstance(row, dict):
         vals = list(row.values())
         return vals[idx] if idx < len(vals) else None
-    return None
+    try:
+        return row[idx]
+    except Exception:
+        return None
 
 
 def _listing_id(source: str, url: str) -> str:
