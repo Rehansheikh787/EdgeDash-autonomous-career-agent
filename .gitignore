@@ -1,0 +1,33 @@
+# Environment variables & secrets (Rule 48)
+.env
+.env.local
+.env.*.local
+.streamlit/secrets.toml
+
+# Local database files (Rule 47)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# IDE & OS files
+.claude-flow/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

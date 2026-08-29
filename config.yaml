@@ -1,0 +1,99 @@
+target_role: Data Analyst
+target_city: Bengaluru
+target_country: India
+target_locations:
+  - India
+  - Bengaluru
+  - Remote
+  - Worldwide
+
+
+keywords:
+  - data analyst
+  - sql
+  - python
+  - power bi
+  - excel
+  - tableau
+
+my_skills:
+  - sql
+  - python
+  - excel
+  - pandas
+  - data visualization
+  - statistics
+
+experience_years: 2
+db_path: edgedash.db
+min_fit_score: 60
+
+sources:
+  - arbeitnow
+  # - apify  # Needs APIFY_TOKEN in .env
+
+use_mock_fetcher: false
+
+llm_provider: groq
+llm_model: openai/gpt-oss-120b
+
+target_seniority: mid
+score_batch_size: 25
+
+
+weight_skill_match: 0.45
+weight_seniority_fit: 0.25
+weight_location_fit: 0.15
+weight_recency: 0.15
+
+# ── Skill Aliases Map (Rule 23) ──────────────────────────────────
+# This mapping is YOURS to edit, maintain, and expand.
+# Whenever you run `python -m edgedash.skills --audit` and spot
+# variations/typos in live data, add new mappings below.
+skill_aliases:
+  k8s: kubernetes
+  nodejs: node
+  node.js: node
+  js: javascript
+  postgres: postgres
+  postgresql: postgres
+  psql: postgres
+  gcp: gcp
+  google cloud: gcp
+  google cloud platform: gcp
+  ml: machine learning
+  machine learning: machine learning
+  ci/cd: ci/cd
+  ci cd: ci/cd
+  cicd: ci/cd
+  ci-cd: ci/cd
+  powerbi: power bi
+  power-bi: power bi
+  power bi: power bi
+  ms excel: excel
+  microsoft excel: excel
+  aws cloud: aws
+  amazon web services: aws
+  ts: typescript
+  py: python
+
+# ── Verification Thresholds (Rule 39) ────────────────────────────
+# min_score_spread: Catches score inflation/compression (scores clustered within narrow range)
+min_score_spread: 10
+# min_score_stdev: Catches uniform scoring without variance across candidates
+min_score_stdev: 5.0
+# max_empty_extraction_pct: Catches broken LLM extractor or silent schema degradation
+max_empty_extraction_pct: 20.0
+# max_skills_per_listing: Catches hallucination/prompt degradation dumping sentences as skill names
+max_skills_per_listing: 50
+
+# min_gap_sample: Catches ranking a single outlier/rumour listing as a primary career gap
+min_gap_sample: 3
+# max_data_age_days: Catches pipeline starvation or stale data ingestion
+max_data_age_days: 3
+
+# ── Natural Language Query Abuse Guards ────────────────────────────
+# max_daily_queries: Daily global quota across all sessions to prevent API credit burn
+max_daily_queries: 200
+
+
