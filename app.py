@@ -64,6 +64,66 @@ def _read_data(db_path: str) -> dict[str, Any] | None:
         return None
 
 
+def _render_health_status_line(data: dict[str, Any] | None) -> None:
+    """Render a lightweight 1-line health status indicator (Rule 50 safe)."""
+    try:
+        if data is None:
+            st.markdown(
+                '<div style="font-size: 0.85rem; padding: 4px 12px; border-radius: 6px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; margin-bottom: 16px;">'
+                '🔴 <strong>Database Offline:</strong> Connection could not be established'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+            return
+
+        recent_logs = data.get("recent_logs") or []
+        latest_verified = data.get("latest_verified")
+
+        # Check last 3 cycles for consecutive failures
+        failed_count = sum(1 for r in recent_logs[:3] if r.get("status") in ("failed", "degraded"))
+        if len(recent_logs) >= 3 and failed_count >= 3:
+            st.markdown(
+                '<div style="font-size: 0.85rem; padding: 4px 12px; border-radius: 6px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; margin-bottom: 16px;">'
+                '🔴 <strong>System Attention Required:</strong> Last 3 autonomous cycles failed verification'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+            return
+
+        v_ts = latest_verified.get("finished_at") if latest_verified else None
+        if not v_ts:
+            st.markdown(
+                '<div style="font-size: 0.85rem; padding: 4px 12px; border-radius: 6px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; margin-bottom: 16px;">'
+                '🟡 <strong>System Initializing:</strong> Initial automated collection cycle pending'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+            return
+
+        clean_ts = str(v_ts).replace("Z", "+00:00")
+        dt = datetime.fromisoformat(clean_ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        hours_ago = max(0.0, (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0)
+
+        if hours_ago <= 24.0:
+            st.markdown(
+                f'<div style="font-size: 0.85rem; padding: 4px 12px; border-radius: 6px; background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); color: #86efac; margin-bottom: 16px;">'
+                f'🟢 <strong>Live &amp; Operational:</strong> Verified data updated {hours_ago:.1f}h ago ({_format_time(v_ts)})'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'<div style="font-size: 0.85rem; padding: 4px 12px; border-radius: 6px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; margin-bottom: 16px;">'
+                f'🟡 <strong>Data Stale:</strong> Last verified cycle was {hours_ago:.1f}h ago ({_format_time(v_ts)})'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+    except Exception as exc:
+        logger.warning("Failed to render health status line: %s", exc)
+
+
 def main() -> None:
     config = _get_config()
     db_path = config.db_path
@@ -71,6 +131,7 @@ def main() -> None:
     st.title("⚡ EdgeDash — Career Intelligence Agent")
 
     data = _read_data(db_path)
+    _render_health_status_line(data)
 
     # ── Rule 50: Hostile Startup / Unreachable Database ───────────────
     if data is None:

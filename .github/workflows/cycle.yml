@@ -53,6 +53,12 @@ jobs:
         run: |
           python -m edgedash.diagnose > cycle_diagnostics.txt 2>&1 || true
 
+      - name: Verify Post-Cycle System Health
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python -m edgedash.health
+
       - name: Upload Cycle Artifacts
         if: always()
         uses: actions/upload-artifact@v4
