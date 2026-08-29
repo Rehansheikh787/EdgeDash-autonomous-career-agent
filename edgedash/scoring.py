@@ -75,6 +75,9 @@ def score_listing(
         target_locs.append(target_city)
     if target_country and target_country not in target_locs:
         target_locs.append(target_country)
+    if "bengaluru" in target_locs or target_city == "bengaluru":
+        if "bangalore" not in target_locs:
+            target_locs.append("bangalore")
 
     listing_loc = str(listing.get("location") or "").lower().strip()
 

@@ -112,8 +112,11 @@ def _matches_location(job: dict[str, Any], config: Config) -> bool:
         target_locs.append(target_city)
     if target_country and target_country not in target_locs:
         target_locs.append(target_country)
+    if "bengaluru" in target_locs or target_city == "bengaluru":
+        if "bangalore" not in target_locs:
+            target_locs.append("bangalore")
 
-    # 1. Direct location match (e.g. Bengaluru, India)
+    # 1. Direct location match (e.g. Bengaluru, Bangalore, India)
     if any(tl in loc for tl in target_locs if tl and tl not in {"remote", "worldwide"}):
         return True
 

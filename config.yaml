@@ -3,7 +3,10 @@ target_city: Bengaluru
 target_country: India
 target_locations:
   - India
+  - Bengaluru
+  - Bangalore
   - Remote
+  - Worldwide
 
 
 keywords:
