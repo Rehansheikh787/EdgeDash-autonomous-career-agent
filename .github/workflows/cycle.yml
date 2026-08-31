@@ -32,9 +32,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Verify Secrets Configuration
+        env:
+          DB_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
-            echo "::error::DATABASE_URL secret is NOT configured in GitHub Repository Secrets! The workflow cannot sync with Supabase. Please add DATABASE_URL under Repo -> Settings -> Secrets and variables -> Actions."
+          if [ -z "$DB_URL" ]; then
+            echo "::error::DATABASE_URL secret is NOT configured in GitHub Repository Secrets! Please add DATABASE_URL under Settings -> Secrets and variables -> Actions -> New repository secret."
             exit 1
           fi
 
