@@ -67,9 +67,9 @@ def build_plan(state: SystemState, config: Config) -> Plan:
     )
 
     # ── 2. Scorer Decision ────────────────────────────────────────────
-    if state.unscored_count > 0:
+    if state.unscored_count > 0 or fetch_run:
         score_run = True
-        score_reason = f"unscored_count={state.unscored_count}"
+        score_reason = f"unscored_count={state.unscored_count}" if state.unscored_count > 0 else "fetching new listings in this cycle"
     else:
         score_run = False
         score_reason = "skipped: unscored_count=0"
@@ -91,9 +91,9 @@ def build_plan(state: SystemState, config: Config) -> Plan:
     if state.gaps_computed_at is None:
         gap_run = True
         gap_reason = "gaps_computed_at is null"
-    elif state.gaps_stale:
+    elif state.gaps_stale or fetch_run:
         gap_run = True
-        gap_reason = "gaps_stale=True"
+        gap_reason = "new listings fetched in this cycle" if fetch_run else "gaps_stale=True"
     elif state.last_cycle_verdict not in ("complete", "verified"):
         gap_run = True
         gap_reason = f"last_cycle_verdict={state.last_cycle_verdict} (re-analyze)"

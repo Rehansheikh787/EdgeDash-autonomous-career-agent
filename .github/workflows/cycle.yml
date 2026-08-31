@@ -31,6 +31,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Verify Secrets Configuration
+        run: |
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "::error::DATABASE_URL secret is NOT configured in GitHub Repository Secrets! The workflow cannot sync with Supabase. Please add DATABASE_URL under Repo -> Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
       - name: Migrate Database Schema
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
